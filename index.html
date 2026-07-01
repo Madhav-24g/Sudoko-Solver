@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sudoku Solver</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <header class="header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="#534AB7"/>
+          <rect x="4" y="4" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
+          <rect x="12.5" y="4" width="7" height="7" rx="1.5" fill="#AFA9EC"/>
+          <rect x="21" y="4" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
+          <rect x="4" y="12.5" width="7" height="7" rx="1.5" fill="#AFA9EC"/>
+          <rect x="12.5" y="12.5" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
+          <rect x="21" y="12.5" width="7" height="7" rx="1.5" fill="#AFA9EC"/>
+          <rect x="4" y="21" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
+          <rect x="12.5" y="21" width="7" height="7" rx="1.5" fill="#AFA9EC"/>
+          <rect x="21" y="21" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
+        </svg>
+      </div>
+      <h1>Sudoku Solver</h1>
+      <p>Enter your puzzle clues, then hit <strong>Solve</strong></p>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <span class="theme-icon">☀️</span>
+      </button>
+    </header>
+
+    <main class="main">
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="btn btn-primary" id="solveBtn" onclick="solvePuzzle()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5,3 19,12 5,21"/></svg>
+          Solve Sudoku
+        </button>
+        <button class="btn btn-secondary" onclick="loadExample()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          Load Example
+        </button>
+        <button class="btn btn-secondary" id="scanUploadBtn" onclick="triggerUpload()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Scan Image
+        </button>
+        <button class="btn btn-secondary" id="scanCameraBtn" onclick="openCameraModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Scan Camera
+        </button>
+        <button class="btn btn-danger" onclick="clearBoard()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+          Clear Board
+        </button>
+      </div>
+
+      <!-- Hidden File Input -->
+      <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)" />
+
+      <!-- Status Bar -->
+      <div class="status-bar" id="status" role="alert" aria-live="polite"></div>
+
+      <!-- Grid -->
+      <div class="grid-outer">
+        <div class="grid" id="grid" role="grid" aria-label="Sudoku board"></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-card">
+          <span class="stat-label">Solve Time</span>
+          <span class="stat-value" id="time">—</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Given Clues</span>
+          <span class="stat-value" id="clues">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Cells Solved</span>
+          <span class="stat-value" id="filled">0</span>
+        </div>
+      </div>
+
+      <!-- Extra Actions -->
+      <div class="extra-actions">
+        <button class="sm-btn" onclick="exportPuzzle()" title="Copy puzzle string to clipboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          Export Puzzle
+        </button>
+        <button class="sm-btn" onclick="importPuzzle()" title="Import from puzzle string">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Import Puzzle
+        </button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot given"></span> Your clues</span>
+        <span class="legend-item"><span class="legend-dot solved"></span> Solver filled</span>
+        <span class="legend-item"><span class="legend-dot error"></span> Conflict</span>
+      </div>
+      <!-- Mobile Digit Pad -->
+      <div class="digit-pad-container" id="digitPadContainer">
+        <div class="digit-pad" id="digitPad" role="toolbar" aria-label="Sudoku input pad">
+          <button class="pad-btn" onclick="pressPadDigit(1)">1</button>
+          <button class="pad-btn" onclick="pressPadDigit(2)">2</button>
+          <button class="pad-btn" onclick="pressPadDigit(3)">3</button>
+          <button class="pad-btn" onclick="pressPadDigit(4)">4</button>
+          <button class="pad-btn" onclick="pressPadDigit(5)">5</button>
+          <button class="pad-btn" onclick="pressPadDigit(6)">6</button>
+          <button class="pad-btn" onclick="pressPadDigit(7)">7</button>
+          <button class="pad-btn" onclick="pressPadDigit(8)">8</button>
+          <button class="pad-btn" onclick="pressPadDigit(9)">9</button>
+          <button class="pad-btn btn-clear" onclick="pressPadDigit(0)">✕</button>
+        </div>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <p>MRV backtracking · Solves any valid puzzle in &lt;100ms</p>
+    </footer>
+
+  </div>
+
+  <!-- Camera Modal -->
+  <div class="modal" id="cameraModal" role="dialog" aria-modal="true" aria-labelledby="cameraModalTitle">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="cameraModalTitle">Scan Camera</h2>
+        <button class="modal-close" onclick="closeCameraModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="video-container">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <div class="camera-overlay">
+            <div class="camera-target-box"></div>
+          </div>
+        </div>
+        <div class="camera-controls">
+          <button class="btn btn-primary" onclick="captureCameraImage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+            Capture Photo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scan Review Modal -->
+  <div class="modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h2 id="reviewModalTitle">Confirm Detected Sudoku</h2>
+        <button class="modal-close" onclick="closeReviewModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Review and correct any incorrectly scanned cells before confirming. Lower confidence cells are highlighted.</p>
+        <p class="modal-desc" id="reviewEngineBadge" style="font-weight:600;"></p>
+        <div class="grid-outer">
+          <div class="grid" id="reviewGrid" role="grid" aria-label="Detected Sudoku board"></div>
+        </div>
+        <!-- Digit pad inside the modal so it's always reachable when editing scanned cells -->
+        <div class="digit-pad-container" id="reviewDigitPadContainer" style="margin-top:1rem;">
+          <div class="digit-pad" role="toolbar" aria-label="Review input pad">
+            <button class="pad-btn" onclick="pressPadDigit(1, true)">1</button>
+            <button class="pad-btn" onclick="pressPadDigit(2, true)">2</button>
+            <button class="pad-btn" onclick="pressPadDigit(3, true)">3</button>
+            <button class="pad-btn" onclick="pressPadDigit(4, true)">4</button>
+            <button class="pad-btn" onclick="pressPadDigit(5, true)">5</button>
+            <button class="pad-btn" onclick="pressPadDigit(6, true)">6</button>
+            <button class="pad-btn" onclick="pressPadDigit(7, true)">7</button>
+            <button class="pad-btn" onclick="pressPadDigit(8, true)">8</button>
+            <button class="pad-btn" onclick="pressPadDigit(9, true)">9</button>
+            <button class="pad-btn btn-clear" onclick="pressPadDigit(0, true)">✕</button>
+          </div>
+        </div>
+        <div class="review-controls">
+          <button class="btn btn-primary" onclick="confirmScanResult()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+            Confirm & Load
+          </button>
+          <button class="btn btn-secondary" onclick="closeReviewModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="solver.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
