@@ -104,13 +104,25 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════════════════
-         VIEW 2: PLAY SUDOKU MODE
+         VIEW 2: PLAY SUDOKU MODE (TACTILE MOBILE & DESKTOP GAME ENGINE)
     ══════════════════════════════════════════════════════════════════════════ -->
     <section class="app-view" id="viewPlay" style="display: none;">
+      <!-- In-Game Top Bar: Back Button, Centered Large Timer, Pause -->
+      <div class="game-header-bar">
+        <button class="game-nav-btn game-nav-back" onclick="window.switchAppView('viewHome')" title="Back to Main Menu">
+          <span class="icon">◀</span> Back
+        </button>
+        <div class="game-timer-center">
+          <span class="timer-display" id="playTimer">00:00</span>
+        </div>
+        <button class="game-nav-btn game-nav-pause" id="pauseBtn" title="Pause Game">
+          Pause <span class="pause-bars">❚❚</span>
+        </button>
+      </div>
+
       <div class="play-layout-container">
-        <!-- Main Board Column -->
+        <!-- Main Board Column (Takes center stage right under top bar) -->
         <div class="play-board-col">
-          <!-- Play Board Grid with Pause Blur Container -->
           <div class="grid-outer play-board-wrapper">
             <div class="grid play-grid" id="playGrid" role="grid" aria-label="Interactive Play Sudoku board"></div>
             
@@ -126,34 +138,38 @@
           </div>
         </div>
 
-        <!-- Controls Column (Sidebar on Desktop, Below Board on Mobile) -->
+        <!-- Controls Column (Below Board on Mobile, Sidebar on Desktop) -->
         <div class="play-controls-col">
-          <!-- Difficulty Selector -->
-          <div class="diff-bar" role="group" aria-label="Select Difficulty">
-            <button class="diff-pill active" data-diff="easy">Easy</button>
-            <button class="diff-pill" data-diff="medium">Medium</button>
-            <button class="diff-pill" data-diff="hard">Hard</button>
-            <button class="diff-pill" data-diff="expert">Expert</button>
-          </div>
-
-          <!-- Play Game Status Bar -->
-          <div class="game-status-bar">
-            <div class="status-item">
-              <span class="status-label">Mistakes</span>
-              <span class="status-value text-danger" id="playMistakes">0 / 3</span>
+          <!-- Sub-bar: Mistakes Counter & Difficulty Selector -->
+          <div class="play-sub-header">
+            <div class="mistakes-badge">
+              <span class="mistakes-val text-danger" id="playMistakes">0/3 Mistakes</span>
             </div>
-            <div class="status-item">
-              <span class="status-label">Timer</span>
-              <span class="status-value timer-display" id="playTimer">00:00</span>
-            </div>
-            <div class="status-item">
-              <button class="btn-icon" id="pauseBtn" title="Pause Game">
-                <span class="icon">⏸</span> Pause
-              </button>
+            <!-- Difficulty Selector -->
+            <div class="diff-bar" role="group" aria-label="Select Difficulty">
+              <button class="diff-pill active" data-diff="easy">Easy</button>
+              <button class="diff-pill" data-diff="medium">Medium</button>
+              <button class="diff-pill" data-diff="hard">Hard</button>
+              <button class="diff-pill" data-diff="expert">Expert</button>
             </div>
           </div>
 
-          <!-- Gameplay Action Toolbar (Clean 5-button layout without confusing notes) -->
+          <!-- Dynamic Number Pad (1-9) -->
+          <div class="play-digit-pad-container">
+            <div class="play-digit-pad" id="playDigitPad" role="toolbar" aria-label="Sudoku number pad">
+              <button class="play-pad-btn" data-digit="1" aria-label="Number 1">1</button>
+              <button class="play-pad-btn" data-digit="2" aria-label="Number 2">2</button>
+              <button class="play-pad-btn" data-digit="3" aria-label="Number 3">3</button>
+              <button class="play-pad-btn" data-digit="4" aria-label="Number 4">4</button>
+              <button class="play-pad-btn" data-digit="5" aria-label="Number 5">5</button>
+              <button class="play-pad-btn" data-digit="6" aria-label="Number 6">6</button>
+              <button class="play-pad-btn" data-digit="7" aria-label="Number 7">7</button>
+              <button class="play-pad-btn" data-digit="8" aria-label="Number 8">8</button>
+              <button class="play-pad-btn" data-digit="9" aria-label="Number 9">9</button>
+            </div>
+          </div>
+
+          <!-- Gameplay Action Toolbar (Undo, Redo, Erase, Hint, New) -->
           <div class="play-toolbar">
             <button class="toolbar-btn" id="undoBtn" title="Undo recent move">
               <span class="tool-icon">↩</span>
@@ -175,24 +191,6 @@
               <span class="tool-icon">🔄</span>
               <span class="tool-text">New</span>
             </button>
-          </div>
-
-          <!-- Dynamic Number Pad (1-9) -->
-          <div class="play-digit-pad-container">
-            <div class="pad-instructions">
-              <span>Select cell & tap number, or drag number to cell</span>
-            </div>
-            <div class="play-digit-pad" id="playDigitPad" role="toolbar" aria-label="Sudoku number pad">
-              <button class="play-pad-btn" data-digit="1" aria-label="Number 1">1</button>
-              <button class="play-pad-btn" data-digit="2" aria-label="Number 2">2</button>
-              <button class="play-pad-btn" data-digit="3" aria-label="Number 3">3</button>
-              <button class="play-pad-btn" data-digit="4" aria-label="Number 4">4</button>
-              <button class="play-pad-btn" data-digit="5" aria-label="Number 5">5</button>
-              <button class="play-pad-btn" data-digit="6" aria-label="Number 6">6</button>
-              <button class="play-pad-btn" data-digit="7" aria-label="Number 7">7</button>
-              <button class="play-pad-btn" data-digit="8" aria-label="Number 8">8</button>
-              <button class="play-pad-btn" data-digit="9" aria-label="Number 9">9</button>
-            </div>
           </div>
         </div>
       </div>

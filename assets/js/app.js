@@ -360,19 +360,24 @@ function importPuzzle() {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const icon = document.querySelector('.theme-icon');
-  if (icon) icon.textContent = theme === 'dark' ? '🌙' : '☀️';
+  if (icon) {
+    if (theme === 'dark') icon.textContent = '🌙';
+    else if (theme === 'indigo') icon.textContent = '🎨';
+    else icon.textContent = '🪵';
+  }
   localStorage.setItem('sudoku-theme', theme);
 }
 
 (function initTheme() {
   const saved = localStorage.getItem('sudoku-theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+  applyTheme(saved || 'wood');
 })();
 
 document.getElementById('themeToggle')?.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme');
-  applyTheme(current === 'dark' ? 'light' : 'dark');
+  const current = document.documentElement.getAttribute('data-theme') || 'wood';
+  const order = ['wood', 'indigo', 'dark'];
+  const nextIdx = (order.indexOf(current) + 1) % order.length;
+  applyTheme(order[nextIdx]);
 });
 
 /* ── Touch Input Pad Handler ── */

@@ -354,6 +354,9 @@
 
       if (i === sel) {
         cell.classList.add('selected');
+        if (targetVal !== 0) {
+          cell.classList.add('highlight-match');
+        }
         continue;
       }
 
@@ -1129,7 +1132,7 @@
 
   function updateMistakesUI() {
     const el = document.getElementById('playMistakes');
-    if (el) el.textContent = `${Game.mistakes} / ${Game.maxMistakes}`;
+    if (el) el.textContent = `${Game.mistakes}/${Game.maxMistakes} Mistakes`;
   }
 
   function updateHintsUI() {
@@ -1233,6 +1236,9 @@
     document.getElementById('newGameBtn')?.addEventListener('click', () => startNewGame(Game.difficulty, true));
     document.getElementById('pauseBtn')?.addEventListener('click', togglePause);
     document.getElementById('resumeBtn')?.addEventListener('click', togglePause);
+    document.getElementById('playBackBtn')?.addEventListener('click', () => {
+      window.switchAppView('viewHome');
+    });
 
     document.getElementById('compPlayAgainBtn')?.addEventListener('click', () => {
       startNewGame(Game.difficulty, false);
@@ -1258,6 +1264,9 @@
       const el = document.getElementById(id);
       if (el) el.style.display = id === targetViewId ? 'block' : 'none';
     });
+
+    // Toggle play-active to enable zero-scroll mobile immersive game layout
+    document.body.classList.toggle('play-active', targetViewId === 'viewPlay');
 
     document.querySelectorAll('.nav-tab').forEach((tab) => {
       tab.classList.toggle('active', tab.dataset.target === targetViewId);
