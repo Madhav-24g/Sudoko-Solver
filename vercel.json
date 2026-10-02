@@ -6,7 +6,7 @@
       "use": "@vercel/python"
     },
     {
-      "src": "static/**",
+      "src": "assets/**",
       "use": "@vercel/static"
     }
   ],
@@ -16,11 +16,11 @@
       "dest": "app.py"
     },
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
     },
     {
-      "src": "/(.*\\.(css|js|ico|png|jpg))",
+      "src": "/(.*\\.(css|js|ico|png|jpg|svg|webp|woff|woff2|ttf))",
       "dest": "app.py"
     },
     {

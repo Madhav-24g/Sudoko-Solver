@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sudoku Solver</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Sudoku Arena — Play & Solve</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
-  <div class="app">
+  <div class="app-container">
 
-    <header class="header">
-      <div class="logo">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <!-- ── Top Navigation Bar ── -->
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+      <div class="nav-brand" onclick="window.switchAppView('viewHome')">
+        <svg class="nav-logo" width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <rect width="32" height="32" rx="8" fill="#534AB7"/>
           <rect x="4" y="4" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
           <rect x="12.5" y="4" width="7" height="7" rx="1.5" fill="#AFA9EC"/>
@@ -23,17 +24,190 @@
           <rect x="12.5" y="21" width="7" height="7" rx="1.5" fill="#AFA9EC"/>
           <rect x="21" y="21" width="7" height="7" rx="1.5" fill="#EEEDFE"/>
         </svg>
+        <span class="brand-title">Sudoku Arena</span>
       </div>
-      <h1>Sudoku Solver</h1>
-      <p>Enter your puzzle clues, then hit <strong>Solve</strong></p>
+
+      <div class="nav-tabs" role="tablist">
+        <button class="nav-tab active" data-target="viewHome" onclick="window.switchAppView('viewHome')">Home</button>
+        <button class="nav-tab" data-target="viewPlay" onclick="window.switchAppView('viewPlay')">🎮 Play</button>
+        <button class="nav-tab" data-target="viewSolver" onclick="window.switchAppView('viewSolver')">🧩 Solver</button>
+        <button class="nav-tab" data-target="viewStats" onclick="window.switchAppView('viewStats')">📊 Stats</button>
+        <button class="nav-tab" data-target="viewLeaderboard" onclick="window.switchAppView('viewLeaderboard')">🏆 Scores</button>
+        <button class="nav-tab" data-target="viewGuide" onclick="window.switchAppView('viewGuide')">📖 Guide</button>
+      </div>
+
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
         <span class="theme-icon">☀️</span>
       </button>
-    </header>
+    </nav>
 
-    <main class="main">
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VIEW 1: HOME / LANDING SCREEN
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <section class="app-view" id="viewHome">
+      <div class="hero-section">
+        <h1 class="hero-title">Sudoku Arena</h1>
+        <p class="hero-subtitle">Play Sudoku, solve puzzles, improve your skills, and track your progress.</p>
+        
+        <div class="hero-actions">
+          <button class="btn btn-hero btn-hero-play" onclick="window.switchAppView('viewPlay')">
+            <span class="btn-hero-icon">🎮</span>
+            <div class="btn-hero-text">
+              <strong>Play Sudoku</strong>
+              <span>Start an interactive game with drag & drop</span>
+            </div>
+          </button>
+          
+          <button class="btn btn-hero btn-hero-solver" onclick="window.switchAppView('viewSolver')">
+            <span class="btn-hero-icon">🧩</span>
+            <div class="btn-hero-text">
+              <strong>Sudoku Solver</strong>
+              <span>Scan or enter puzzles and solve in &lt;100ms</span>
+            </div>
+          </button>
+        </div>
+      </div>
 
-      <!-- Controls -->
+      <!-- Feature Highlight Cards -->
+      <div class="feature-grid">
+        <div class="feature-card" onclick="window.switchAppView('viewPlay')">
+          <div class="feature-icon">🎯</div>
+          <h3>Multiple Difficulties</h3>
+          <p>Calibrated puzzles from Easy to Expert with guaranteed unique solutions.</p>
+        </div>
+        <div class="feature-card" onclick="window.switchAppView('viewPlay')">
+          <div class="feature-icon">🖐️</div>
+          <h3>Drag & Drop Input</h3>
+          <p>Drag numbers directly onto cells with auto-exhaustion when completed.</p>
+        </div>
+        <div class="feature-card" onclick="window.switchAppView('viewPlay')">
+          <div class="feature-icon">💡</div>
+          <h3>Smart Hints & Alerts</h3>
+          <p>Get instant error detection, cell hints, and mistake tracking as you play.</p>
+        </div>
+        <div class="feature-card" onclick="window.switchAppView('viewSolver')">
+          <div class="feature-icon">📷</div>
+          <h3>Multimodal AI Scanner</h3>
+          <p>Capture puzzles via camera or photo using Google Gemini AI and OpenCV.</p>
+        </div>
+        <div class="feature-card" onclick="window.switchAppView('viewSolver')">
+          <div class="feature-icon">⚡</div>
+          <h3>Constraint MRV Solver</h3>
+          <p>Mathematically rigorous solver detects single vs multiple solutions.</p>
+        </div>
+        <div class="feature-card" onclick="window.switchAppView('viewStats')">
+          <div class="feature-icon">📈</div>
+          <h3>Personal Statistics</h3>
+          <p>Monitor your win rate, completion times, streaks, and mistake counts.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VIEW 2: PLAY SUDOKU MODE
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <section class="app-view" id="viewPlay" style="display: none;">
+      <div class="play-layout-container">
+        <!-- Main Board Column -->
+        <div class="play-board-col">
+          <!-- Play Board Grid with Pause Blur Container -->
+          <div class="grid-outer play-board-wrapper">
+            <div class="grid play-grid" id="playGrid" role="grid" aria-label="Interactive Play Sudoku board"></div>
+            
+            <!-- Pause Overlay -->
+            <div class="pause-overlay" id="pauseOverlay">
+              <div class="pause-box">
+                <span class="pause-icon">⏸</span>
+                <h2>Game Paused</h2>
+                <p>Take a breath. Your progress is saved.</p>
+                <button class="btn btn-primary" id="resumeBtn">Resume Playing</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Column (Sidebar on Desktop, Below Board on Mobile) -->
+        <div class="play-controls-col">
+          <!-- Difficulty Selector -->
+          <div class="diff-bar" role="group" aria-label="Select Difficulty">
+            <button class="diff-pill active" data-diff="easy">Easy</button>
+            <button class="diff-pill" data-diff="medium">Medium</button>
+            <button class="diff-pill" data-diff="hard">Hard</button>
+            <button class="diff-pill" data-diff="expert">Expert</button>
+          </div>
+
+          <!-- Play Game Status Bar -->
+          <div class="game-status-bar">
+            <div class="status-item">
+              <span class="status-label">Mistakes</span>
+              <span class="status-value text-danger" id="playMistakes">0 / 3</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Timer</span>
+              <span class="status-value timer-display" id="playTimer">00:00</span>
+            </div>
+            <div class="status-item">
+              <button class="btn-icon" id="pauseBtn" title="Pause Game">
+                <span class="icon">⏸</span> Pause
+              </button>
+            </div>
+          </div>
+
+          <!-- Gameplay Action Toolbar (Clean 5-button layout without confusing notes) -->
+          <div class="play-toolbar">
+            <button class="toolbar-btn" id="undoBtn" title="Undo recent move">
+              <span class="tool-icon">↩</span>
+              <span class="tool-text">Undo</span>
+            </button>
+            <button class="toolbar-btn" id="redoBtn" title="Redo move">
+              <span class="tool-icon">↪</span>
+              <span class="tool-text">Redo</span>
+            </button>
+            <button class="toolbar-btn" id="eraseBtn" title="Erase selected cell">
+              <span class="tool-icon">⌫</span>
+              <span class="tool-text">Erase</span>
+            </button>
+            <button class="toolbar-btn" id="hintBtn" title="Get a Hint (H) for selected cell">
+              <span class="tool-icon">💡</span>
+              <span class="tool-text">Hint (<span id="hintCountBadge">3</span>)</span>
+            </button>
+            <button class="toolbar-btn" id="newGameBtn" title="Start a fresh puzzle">
+              <span class="tool-icon">🔄</span>
+              <span class="tool-text">New</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Number Pad (1-9) -->
+          <div class="play-digit-pad-container">
+            <div class="pad-instructions">
+              <span>Select cell & tap number, or drag number to cell</span>
+            </div>
+            <div class="play-digit-pad" id="playDigitPad" role="toolbar" aria-label="Sudoku number pad">
+              <button class="play-pad-btn" data-digit="1" aria-label="Number 1">1</button>
+              <button class="play-pad-btn" data-digit="2" aria-label="Number 2">2</button>
+              <button class="play-pad-btn" data-digit="3" aria-label="Number 3">3</button>
+              <button class="play-pad-btn" data-digit="4" aria-label="Number 4">4</button>
+              <button class="play-pad-btn" data-digit="5" aria-label="Number 5">5</button>
+              <button class="play-pad-btn" data-digit="6" aria-label="Number 6">6</button>
+              <button class="play-pad-btn" data-digit="7" aria-label="Number 7">7</button>
+              <button class="play-pad-btn" data-digit="8" aria-label="Number 8">8</button>
+              <button class="play-pad-btn" data-digit="9" aria-label="Number 9">9</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VIEW 3: SUDOKU SOLVER MODE (100% PRESERVED EXISTING SOLVER)
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <section class="app-view" id="viewSolver" style="display: none;">
+      <div class="solver-header">
+        <h2>Sudoku Scanner & Solver</h2>
+        <p>Enter clues manually, upload an image, scan with camera, then hit <strong>Solve</strong></p>
+      </div>
+
+      <!-- Existing Controls -->
       <div class="controls">
         <button class="btn btn-primary" id="solveBtn" onclick="solvePuzzle()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5,3 19,12 5,21"/></svg>
@@ -63,12 +237,12 @@
       <!-- Status Bar -->
       <div class="status-bar" id="status" role="alert" aria-live="polite"></div>
 
-      <!-- Grid -->
+      <!-- Existing Solver Grid -->
       <div class="grid-outer">
         <div class="grid" id="grid" role="grid" aria-label="Sudoku board"></div>
       </div>
 
-      <!-- Stats -->
+      <!-- Existing Stats -->
       <div class="stats">
         <div class="stat-card">
           <span class="stat-label">Solve Time</span>
@@ -102,7 +276,8 @@
         <span class="legend-item"><span class="legend-dot solved"></span> Solver filled</span>
         <span class="legend-item"><span class="legend-dot error"></span> Conflict</span>
       </div>
-      <!-- Mobile Digit Pad -->
+
+      <!-- Existing Mobile Digit Pad -->
       <div class="digit-pad-container" id="digitPadContainer">
         <div class="digit-pad" id="digitPad" role="toolbar" aria-label="Sudoku input pad">
           <button class="pad-btn" onclick="pressPadDigit(1)">1</button>
@@ -118,15 +293,234 @@
         </div>
       </div>
 
-    </main>
+      <footer class="footer">
+        <p>MRV backtracking · Constraint Propagation · Solves any valid puzzle in &lt;100ms</p>
+      </footer>
+    </section>
 
-    <footer class="footer">
-      <p>MRV backtracking · Solves any valid puzzle in &lt;100ms</p>
-    </footer>
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VIEW 4: STATISTICS VIEW
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <section class="app-view" id="viewStats" style="display: none;">
+      <div class="view-header">
+        <h2>Your Statistics</h2>
+        <p>Track your gameplay performance, best times, and streaks.</p>
+      </div>
 
+      <div class="stats-overview-grid">
+        <div class="stat-box">
+          <span class="stat-box-title">Games Played</span>
+          <span class="stat-box-num" id="statGamesPlayed">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-box-title">Games Won</span>
+          <span class="stat-box-num" id="statGamesWon">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-box-title">Win Rate</span>
+          <span class="stat-box-num" id="statWinRate">0%</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-box-title">Current Streak</span>
+          <span class="stat-box-num" id="statCurrentStreak">0</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-box-title">Best Streak</span>
+          <span class="stat-box-num" id="statBestStreak">0</span>
+        </div>
+      </div>
+
+      <h3 class="section-title">Best Completion Times</h3>
+      <div class="best-times-grid">
+        <div class="best-time-card">
+          <span class="diff-badge easy">Easy</span>
+          <span class="time-value" id="statBestEasy">—</span>
+        </div>
+        <div class="best-time-card">
+          <span class="diff-badge medium">Medium</span>
+          <span class="time-value" id="statBestMedium">—</span>
+        </div>
+        <div class="best-time-card">
+          <span class="diff-badge hard">Hard</span>
+          <span class="time-value" id="statBestHard">—</span>
+        </div>
+        <div class="best-time-card">
+          <span class="diff-badge expert">Expert</span>
+          <span class="time-value" id="statBestExpert">—</span>
+        </div>
+      </div>
+
+      <div class="stats-actions">
+        <button class="btn btn-primary" onclick="window.switchAppView('viewPlay')">Play Sudoku Now</button>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VIEW 5: LEADERBOARD / HIGH SCORES
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <section class="app-view" id="viewLeaderboard" style="display: none;">
+      <div class="view-header">
+        <h2>🏆 Hall of Fame</h2>
+        <p>Global leaderboard — top scores from all players on this server.</p>
+      </div>
+
+      <!-- Filter & Player Name Controls -->
+      <div class="lb-controls">
+        <div class="lb-filter-pills" role="group" aria-label="Filter by difficulty">
+          <button class="lb-filter-pill active" data-diff="" onclick="window.setLbFilter('', this)">All</button>
+          <button class="lb-filter-pill" data-diff="easy" onclick="window.setLbFilter('easy', this)">Easy</button>
+          <button class="lb-filter-pill" data-diff="medium" onclick="window.setLbFilter('medium', this)">Medium</button>
+          <button class="lb-filter-pill" data-diff="hard" onclick="window.setLbFilter('hard', this)">Hard</button>
+          <button class="lb-filter-pill" data-diff="expert" onclick="window.setLbFilter('expert', this)">Expert</button>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="window.setPlayerNamePrompt()" title="Change your leaderboard name">
+          ✏️ Change Name
+        </button>
+      </div>
+
+      <!-- Global Leaderboard Table -->
+      <div class="leaderboard-table-container">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Difficulty</th>
+              <th>Score</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="globalLeaderboardBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Personal scores section -->
+      <div class="view-header" style="margin-top:2rem;">
+        <h3>📋 Your Recent Games</h3>
+        <p>Personal history stored locally on this device.</p>
+      </div>
+      <div class="leaderboard-table-container">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Difficulty</th>
+              <th>Score</th>
+              <th>Time</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Populated dynamically by game.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <!-- ══════════════════════════════════════════════════════════════════════════
+         VIEW 6: HOW TO PLAY GUIDE
+    ══════════════════════════════════════════════════════════════════════════ -->
+    <section class="app-view" id="viewGuide" style="display: none;">
+      <div class="view-header">
+        <h2>How to Play Sudoku</h2>
+        <p>Master the rules, controls, and strategies of Sudoku Arena.</p>
+      </div>
+
+      <div class="guide-content">
+        <div class="guide-card">
+          <div class="guide-step-num">1</div>
+          <div class="guide-step-body">
+            <h3>The Core Rule</h3>
+            <p>Every row, every column, and every 3×3 sub-box must contain the digits <strong>1 through 9</strong> without repetition.</p>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-step-num">2</div>
+          <div class="guide-step-body">
+            <h3>Drag & Drop Number Pad</h3>
+            <p>Press and drag any number from the bottom pad directly onto an empty cell. Numbers automatically disappear from the pad when all 9 occurrences are correctly placed!</p>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-step-num">3</div>
+          <div class="guide-step-body">
+            <h3>Pencil Notes Mode</h3>
+            <p>Toggle <strong>Notes (N)</strong> to place small candidate numbers in empty cells. When you place a final number, notes in peer cells are pruned automatically.</p>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-step-num">4</div>
+          <div class="guide-step-body">
+            <h3>Mistakes & Hints</h3>
+            <p>You are allowed up to <strong>3 mistakes</strong> per game. If you get stuck, click <strong>Hint (H)</strong> to reveal a correct number for an unsolved cell.</p>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-step-num">5</div>
+          <div class="guide-step-body">
+            <h3>Solving Score</h3>
+            <p>Scores are calculated from your chosen difficulty, completion time, mistake count, and hints used. Faster times and fewer hints yield higher scores!</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-actions">
+        <button class="btn btn-primary" onclick="window.switchAppView('viewPlay')">Start Playing</button>
+      </div>
+    </section>
+
+  </div> <!-- End .app-container -->
+
+  <!-- ══════════════════════════════════════════════════════════════════════════
+       MODALS (Camera, Scan Review, Completion Celebration)
+  ══════════════════════════════════════════════════════════════════════════ -->
+
+  <!-- Completion Celebration Modal -->
+  <div class="modal" id="completionModal" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+    <div class="modal-content modal-comp">
+      <div class="comp-icon-anim">🎉</div>
+      <h2 id="completionTitle">Sudoku Completed!</h2>
+      <p class="comp-subtitle">Outstanding work! You conquered the puzzle.</p>
+      
+      <div class="comp-stats-card">
+        <div class="comp-stat-row">
+          <span>Difficulty</span>
+          <strong id="compDifficulty">Medium</strong>
+        </div>
+        <div class="comp-stat-row">
+          <span>Time Taken</span>
+          <strong id="compTime">05:42</strong>
+        </div>
+        <div class="comp-stat-row">
+          <span>Mistakes</span>
+          <strong id="compMistakes">0 / 3</strong>
+        </div>
+        <div class="comp-stat-row">
+          <span>Hints Used</span>
+          <strong id="compHints">1 / 3</strong>
+        </div>
+        <div class="comp-stat-row score-row">
+          <span>Final Score</span>
+          <strong class="highlight-score" id="compScore">1420</strong>
+        </div>
+      </div>
+
+      <div class="comp-actions">
+        <button class="btn btn-primary" id="compPlayAgainBtn">Play Again</button>
+        <button class="btn btn-secondary" id="compDiffBtn">Change Difficulty</button>
+        <button class="btn btn-secondary" id="compStatsBtn">View Statistics</button>
+      </div>
+    </div>
   </div>
 
-  <!-- Camera Modal -->
+  <!-- Existing Camera Modal -->
   <div class="modal" id="cameraModal" role="dialog" aria-modal="true" aria-labelledby="cameraModalTitle">
     <div class="modal-content">
       <div class="modal-header">
@@ -150,7 +544,7 @@
     </div>
   </div>
 
-  <!-- Scan Review Modal -->
+  <!-- Existing Scan Review Modal -->
   <div class="modal" id="reviewModal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
     <div class="modal-content modal-lg">
       <div class="modal-header">
@@ -189,7 +583,9 @@
     </div>
   </div>
 
-  <script src="solver.js"></script>
-  <script src="app.js"></script>
+  <!-- Scripts: Modular Architecture -->
+  <script src="assets/js/solver.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/game.js"></script>
 </body>
 </html>

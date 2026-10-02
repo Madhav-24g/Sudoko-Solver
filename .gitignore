@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 scan_cache/
+backend/data/
+backend/__pycache__/

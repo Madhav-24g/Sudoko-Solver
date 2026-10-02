@@ -44,6 +44,7 @@ let cameraStream = null;
 /* ── Build Main Grid ── */
 function buildGrid() {
   const grid = document.getElementById('grid');
+  if (!grid) return;
   grid.innerHTML = '';
   cells = [];
 
@@ -83,24 +84,31 @@ function buildCellClass(row, col, extra = '') {
 /* ── Cell Selection & Navigation ── */
 function selectCell(idx, isReview = false) {
   if (isReview) {
-    if (reviewSelectedIdx >= 0) reviewCells[reviewSelectedIdx].classList.remove('selected');
+    if (reviewSelectedIdx >= 0 && reviewCells[reviewSelectedIdx]) {
+      reviewCells[reviewSelectedIdx].classList.remove('selected');
+    }
     reviewSelectedIdx = idx;
-    reviewCells[idx].classList.add('selected');
-    reviewCells[idx].focus({ preventScroll: true });
-    // Always show the review pad (not just on touch)
-    document.getElementById('reviewDigitPadContainer').classList.add('active');
+    if (reviewCells[idx]) {
+      reviewCells[idx].classList.add('selected');
+      reviewCells[idx].focus({ preventScroll: true });
+    }
+    const pad = document.getElementById('reviewDigitPadContainer');
+    if (pad) pad.classList.add('active');
   } else {
-    if (selectedIdx >= 0) cells[selectedIdx].classList.remove('selected');
+    if (selectedIdx >= 0 && cells[selectedIdx]) {
+      cells[selectedIdx].classList.remove('selected');
+    }
     selectedIdx = idx;
-    cells[idx].classList.add('selected');
-    cells[idx].focus({ preventScroll: true });
-    // Always show the digit pad (not just on touch devices)
-    document.getElementById('digitPadContainer').classList.add('active');
+    if (cells[idx]) {
+      cells[idx].classList.add('selected');
+      cells[idx].focus({ preventScroll: true });
+    }
+    const pad = document.getElementById('digitPadContainer');
+    if (pad) pad.classList.add('active');
   }
 }
 
 function handleKey(e, idx, isReview = false) {
-  // Arrow Key Navigation - Stop at boundary (Strict movement, no unexpected jumps)
   const row = Math.floor(idx / 9);
   const col = idx % 9;
 
@@ -155,7 +163,6 @@ function placeDigit(idx, v) {
   givenMask[idx]   = true;
   renderCell(idx);
   
-  // Real-time conflict checks & error highlighting
   runRealTimeValidation();
   updateMeta();
 }
@@ -173,12 +180,11 @@ function removeDigit(idx) {
 function runRealTimeValidation() {
   clearErrors();
   
-  // Local validation checks
   const validation = validateBoard(boardValues);
   if (!validation.ok) {
     setStatus(validation.msg, 'err');
     const conflicts = getConflictCells(boardValues);
-    conflicts.forEach(idx => cells[idx].classList.add('error-cell'));
+    conflicts.forEach(idx => cells[idx]?.classList.add('error-cell'));
   } else {
     setStatus('');
   }
@@ -189,6 +195,7 @@ function renderCell(idx, animate = false) {
   const row = Math.floor(idx / 9);
   const col = idx % 9;
   const c   = cells[idx];
+  if (!c) return;
   const v   = boardValues[idx];
 
   let cls = 'cell';
@@ -223,8 +230,10 @@ function clearBoard() {
   solvedMask  = new Array(81).fill(false);
   renderAll();
   setStatus('Board cleared.');
-  document.getElementById('time').textContent   = '—';
-  document.getElementById('filled').textContent = '0';
+  const timeEl = document.getElementById('time');
+  const filledEl = document.getElementById('filled');
+  if (timeEl) timeEl.textContent = '—';
+  if (filledEl) filledEl.textContent = '0';
   updateMeta();
 }
 
@@ -250,25 +259,23 @@ async function solvePuzzle() {
 
   const board = [...boardValues];
 
-  // 1. Pre-validate board state
   const validation = validateBoard(board);
   if (!validation.ok) {
     setStatus(validation.msg, 'err');
     const conflicts = getConflictCells(board);
-    conflicts.forEach(idx => cells[idx].classList.add('error-cell'));
+    conflicts.forEach(idx => cells[idx]?.classList.add('error-cell'));
     return;
   }
 
-  // 2. Call solver (API with client-side fallback)
   const result = await solveBoard(board);
 
   if (!result.success) {
     setStatus(result.message || 'No solution found.', 'err');
-    document.getElementById('time').textContent = '—';
+    const timeEl = document.getElementById('time');
+    if (timeEl) timeEl.textContent = '—';
     return;
   }
 
-  // 3. Apply solved values to state & render with staggered animation
   let count = 0;
   for (let i = 0; i < 81; i++) {
     if (!givenMask[i] && result.solution[i]) {
@@ -278,7 +285,6 @@ async function solvePuzzle() {
     }
   }
 
-  // Stagger animation row by row, column within row
   for (let i = 0; i < 81; i++) {
     if (solvedMask[i]) {
       const row = Math.floor(i / 9);
@@ -290,8 +296,10 @@ async function solvePuzzle() {
     }
   }
 
-  document.getElementById('time').textContent   = result.timeMs + 'ms';
-  document.getElementById('filled').textContent = count;
+  const timeEl = document.getElementById('time');
+  const filledEl = document.getElementById('filled');
+  if (timeEl) timeEl.textContent = result.timeMs + 'ms';
+  if (filledEl) filledEl.textContent = count;
   setStatus(result.message || `Solved in ${result.timeMs}ms ✓`, 'ok');
   updateMeta();
 }
@@ -302,11 +310,13 @@ function clearErrors() {
 }
 
 function updateMeta() {
-  document.getElementById('clues').textContent = givenMask.filter(Boolean).length;
+  const cluesEl = document.getElementById('clues');
+  if (cluesEl) cluesEl.textContent = givenMask.filter(Boolean).length;
 }
 
 function setStatus(msg, type = '') {
   const s = document.getElementById('status');
+  if (!s) return;
   s.textContent = msg;
   s.className   = 'status-bar' + (type ? ' ' + type : '');
 }
@@ -360,7 +370,7 @@ function applyTheme(theme) {
   applyTheme(saved || (prefersDark ? 'dark' : 'light'));
 })();
 
-document.getElementById('themeToggle').addEventListener('click', () => {
+document.getElementById('themeToggle')?.addEventListener('click', () => {
   const current = document.documentElement.getAttribute('data-theme');
   applyTheme(current === 'dark' ? 'light' : 'dark');
 });
@@ -381,7 +391,7 @@ function pressPadDigit(digit, isReview = false) {
 
 /* ── Image Upload Scanner Logic ── */
 function triggerUpload() {
-  document.getElementById('fileInput').click();
+  document.getElementById('fileInput')?.click();
 }
 
 async function handleFileSelect(event) {
@@ -408,13 +418,11 @@ async function handleFileSelect(event) {
         setStatus(data.message || 'Scanning failed.', 'err');
       }
     } else {
-      // Server responded with an error status — it still sends a JSON
-      // body with a real reason, so show that instead of a generic message.
       let detail = `HTTP ${response.status}`;
       try {
         const errData = await response.json();
         if (errData && errData.message) detail = errData.message;
-      } catch (_) { /* response wasn't JSON; keep the status code */ }
+      } catch (_) {}
       setStatus(`Server scanning error: ${detail}`, 'err');
     }
   } catch (err) {
@@ -422,28 +430,24 @@ async function handleFileSelect(event) {
     setStatus('Failed to connect to scanner API.', 'err');
   }
   
-  // Reset file input
   event.target.value = '';
 }
 
 /* ── Camera Scanner Logic ── */
 async function openCameraModal() {
-  // Camera via getUserMedia requires HTTPS on mobile (except localhost).
-  // Detect this early and guide the user to the file upload instead.
   const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
   if (!isSecure) {
     setStatus(
       'Camera requires HTTPS on mobile. Use "Scan Image" instead — tap it and choose "Take Photo" from the menu.',
       'err'
     );
-    // Trigger the file upload as a fallback — on mobile this shows
-    // the OS picker which includes "Take Photo" without needing HTTPS.
-    document.getElementById('fileInput').click();
+    document.getElementById('fileInput')?.click();
     return;
   }
 
   const modal = document.getElementById('cameraModal');
   const video = document.getElementById('cameraVideo');
+  if (!modal || !video) return;
   
   modal.classList.add('active');
   setStatus('Starting camera stream...', 'info');
@@ -468,7 +472,7 @@ async function openCameraModal() {
 
 function closeCameraModal() {
   const modal = document.getElementById('cameraModal');
-  modal.classList.remove('active');
+  if (modal) modal.classList.remove('active');
   
   if (cameraStream) {
     cameraStream.getTracks().forEach(track => track.stop());
@@ -478,7 +482,7 @@ function closeCameraModal() {
 
 async function captureCameraImage() {
   const video = document.getElementById('cameraVideo');
-  if (!video.srcObject) return;
+  if (!video || !video.srcObject) return;
   
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
@@ -513,7 +517,7 @@ async function captureCameraImage() {
         try {
           const errData = await response.json();
           if (errData && errData.message) detail = errData.message;
-        } catch (_) { /* response wasn't JSON; keep the status code */ }
+        } catch (_) {}
         setStatus(`Server scanning error: ${detail}`, 'err');
       }
     } catch (err) {
@@ -527,15 +531,16 @@ async function captureCameraImage() {
 function openReviewModal(gridData, confidenceData, scanId, engine) {
   const modal = document.getElementById('reviewModal');
   const gridContainer = document.getElementById('reviewGrid');
+  if (!modal || !gridContainer) return;
 
   const badge = document.getElementById('reviewEngineBadge');
   if (badge) {
     if (engine === 'gemini') {
       badge.textContent = '✓ Scanned using Google Gemini';
-      badge.style.color = 'var(--ok-color, #1a7f37)';
+      badge.style.color = 'var(--solved, #0F6E56)';
     } else if (engine === 'opencv_fallback') {
       badge.textContent = '⚠ Scanned using local fallback (less accurate) — set GEMINI_API_KEY for better results';
-      badge.style.color = 'var(--warn-color, #b35900)';
+      badge.style.color = '#ef6c00';
     } else {
       badge.textContent = '';
     }
@@ -557,7 +562,6 @@ function openReviewModal(gridData, confidenceData, scanId, engine) {
     
     const div = document.createElement('div');
     
-    // Check if confidence is low (below 0.85) to highlight for user verification
     let extraClass = '';
     if (val !== 0 && conf < 0.85) {
       extraClass = 'low-confidence';
@@ -572,7 +576,6 @@ function openReviewModal(gridData, confidenceData, scanId, engine) {
       div.classList.add('given');
     }
     
-    // Navigation & editing handlers for review grid
     div.addEventListener('click', () => selectCell(idx, true));
     div.addEventListener('focus', () => selectCell(idx, true));
     div.addEventListener('keydown', (e) => handleKey(e, idx, true));
@@ -582,25 +585,23 @@ function openReviewModal(gridData, confidenceData, scanId, engine) {
   }
   
   modal.classList.add('active');
-  
-  // Select first cell by default
   setTimeout(() => selectCell(0, true), 100);
 }
 
 function closeReviewModal() {
   const modal = document.getElementById('reviewModal');
-  modal.classList.remove('active');
+  if (modal) modal.classList.remove('active');
   reviewSelectedIdx = -1;
-  document.getElementById('reviewDigitPadContainer').classList.remove('active');
+  const pad = document.getElementById('reviewDigitPadContainer');
+  if (pad) pad.classList.remove('active');
 }
 
 function placeDigitReview(idx, v) {
   reviewValues[idx] = v;
-  
-  // Set high confidence since user explicitly verified/edited it
   reviewConfidence[idx] = 1.0; 
   
   const c = reviewCells[idx];
+  if (!c) return;
   c.textContent = v;
   c.className = buildCellClass(Math.floor(idx / 9), idx % 9, 'given');
   
@@ -614,6 +615,7 @@ function removeDigitReview(idx) {
   reviewConfidence[idx] = 0.0;
   
   const c = reviewCells[idx];
+  if (!c) return;
   c.textContent = '';
   c.className = buildCellClass(Math.floor(idx / 9), idx % 9);
   
@@ -625,14 +627,12 @@ function removeDigitReview(idx) {
 async function confirmScanResult() {
   setStatus('Confirming scan and saving templates...', 'info');
   
-  // Structure flat list back to 9x9 grid
   const grid = [];
   for (let r = 0; r < 9; r++) {
     grid.push(reviewValues.slice(r * 9, r * 9 + 9));
   }
   
   try {
-    // Send corrections to Flask backend to learn templates
     await fetch('/api/confirm_scan', {
       method: 'POST',
       headers: {
@@ -647,7 +647,6 @@ async function confirmScanResult() {
     console.warn('Failed to send verified scan confirmation to server.', err);
   }
   
-  // Load reviewValues to main board values
   boardValues = [...reviewValues];
   givenMask = reviewValues.map(v => v !== 0);
   solvedMask = new Array(81).fill(false);

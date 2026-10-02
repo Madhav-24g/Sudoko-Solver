@@ -23,9 +23,10 @@ try:
 except ImportError:
     pass  # python-dotenv is optional; env vars can also be set directly
 
-from scanner import SudokuScanner
-from gemini_scanner import GeminiSudokuScanner, SCAN_CACHE_DIR
-from solver_engine import solve_puzzle, get_conflicts
+from backend.scanner import SudokuScanner
+from backend.gemini_scanner import GeminiSudokuScanner, SCAN_CACHE_DIR
+from backend.solver_engine import solve_puzzle, get_conflicts
+from backend.leaderboard import get_leaderboard, add_score
 
 import numpy as np
 from flask.json.provider import DefaultJSONProvider
@@ -334,6 +335,78 @@ def api_confirm_scan():
         })
 
 
+# ── API: Leaderboard ─────────────────────────────────────────────────────────
+
+@app.route('/api/leaderboard', methods=['GET'])
+def api_leaderboard_get():
+    """
+    Fetch leaderboard scores.
+
+    Query params:
+        difficulty (optional): 'easy' | 'medium' | 'hard' | 'expert'
+
+    Response: {
+        leaderboard: { easy: [...], medium: [...], hard: [...], expert: [...] },
+        total: int
+    }
+    """
+    difficulty = request.args.get('difficulty')
+    data = get_leaderboard(difficulty)
+    total = sum(len(v) for v in data.values())
+    return jsonify({'leaderboard': data, 'total': total})
+
+
+@app.route('/api/leaderboard', methods=['POST'])
+def api_leaderboard_post():
+    """
+    Submit a new score to the global leaderboard.
+
+    Request: JSON {
+        name:       str  (player name, max 20 chars)
+        difficulty: str  ('easy' | 'medium' | 'hard' | 'expert')
+        score:      int  (game score)
+        time:       int  (completion time in seconds)
+        date:       str  (ISO date string)
+    }
+    Response: {
+        success: bool,
+        rank:    int | null,
+        is_top:  bool,
+        entries: [...]
+    }
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'message': 'No JSON body provided.'}), 400
+
+    required = ('name', 'difficulty', 'score', 'time')
+    missing = [f for f in required if f not in data]
+    if missing:
+        return jsonify({
+            'success': False,
+            'message': f'Missing required fields: {", ".join(missing)}'
+        }), 400
+
+    try:
+        result = add_score(
+            name=data.get('name', 'Anonymous'),
+            difficulty=data['difficulty'],
+            score=data['score'],
+            time_seconds=data['time'],
+            date=data.get('date', ''),
+        )
+        return jsonify({
+            'success': True,
+            'rank': result['rank'],
+            'is_top': result['is_top'],
+            'entries': result['entries'],
+        })
+    except ValueError as e:
+        return jsonify({'success': False, 'message': str(e)}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Leaderboard error: {str(e)}'}), 500
+
+
 # ── Health Check ─────────────────────────────────────────────────────────────
 
 @app.route('/api/health', methods=['GET'])
@@ -361,14 +434,14 @@ if __name__ == '__main__':
     )
 
     print('\n+--------------------------------------------------+')
-    print('|          Sudoku Scanner & Solver Server          |')
+    print('|             Sudoku Arena — Server                |')
     print('+--------------------------------------------------+')
     print('|  Local:   http://localhost:5000                  |')
     print('|  Network: http://0.0.0.0:5000                    |')
-    print(f'|  Gemini scanner: {gemini_status}')
+    print(f'|  Gemini: {gemini_status[:39]:<39}|')
     print('|                                                  |')
-    print('|  For mobile access on the same Wi-Fi network,    |')
-    print('|  use your computer\'s local IP address.           |')
+    print('|  Backend modules: backend/                       |')
+    print('|  Frontend assets: assets/                        |')
     print('+--------------------------------------------------+\n')
 
     app.run(host='0.0.0.0', port=5000, debug=True)
