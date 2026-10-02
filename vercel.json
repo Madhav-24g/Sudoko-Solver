@@ -6,6 +6,10 @@
       "use": "@vercel/python"
     },
     {
+      "src": "index.html",
+      "use": "@vercel/static"
+    },
+    {
       "src": "assets/**",
       "use": "@vercel/static"
     }
@@ -20,8 +24,8 @@
       "dest": "/assets/$1"
     },
     {
-      "src": "/(.*\\.(css|js|ico|png|jpg|svg|webp|woff|woff2|ttf))",
-      "dest": "app.py"
+      "src": "/",
+      "dest": "/index.html"
     },
     {
       "src": "/(.*)",

@@ -18,10 +18,16 @@ At most MAX_PER_DIFFICULTY entries are kept per difficulty, sorted by score desc
 import json
 import os
 import time
+import tempfile
 from pathlib import Path
 
-# Storage directory — inside backend/ so it travels with the rest of backend code
-DATA_DIR = Path(__file__).parent / 'data'
+# Storage directory — uses tempdir on serverless platforms (Vercel, AWS Lambda)
+# where repository directories are read-only.
+if os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or not os.access(Path(__file__).parent, os.W_OK):
+    DATA_DIR = Path(tempfile.gettempdir()) / 'sudoku_arena_data'
+else:
+    DATA_DIR = Path(__file__).parent / 'data'
+
 LEADERBOARD_FILE = DATA_DIR / 'leaderboard.json'
 LOCK_FILE = DATA_DIR / 'leaderboard.lock'
 
@@ -30,7 +36,10 @@ DIFFICULTIES = ('easy', 'medium', 'hard', 'expert')
 
 
 def _ensure_data_dir():
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
 
 
 def _acquire_lock(timeout: float = 3.0) -> bool:
@@ -74,11 +83,14 @@ def _load_raw() -> dict:
 
 def _save_raw(data: dict):
     """Write leaderboard atomically: write to temp file then rename."""
-    _ensure_data_dir()
-    tmp = LEADERBOARD_FILE.with_suffix('.tmp')
-    with open(tmp, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-    tmp.replace(LEADERBOARD_FILE)
+    try:
+        _ensure_data_dir()
+        tmp = LEADERBOARD_FILE.with_suffix('.tmp')
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        tmp.replace(LEADERBOARD_FILE)
+    except OSError:
+        pass
 
 
 def get_leaderboard(difficulty: str = None) -> dict:
