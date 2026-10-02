@@ -361,23 +361,20 @@ function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const icon = document.querySelector('.theme-icon');
   if (icon) {
-    if (theme === 'dark') icon.textContent = '🌙';
-    else if (theme === 'indigo') icon.textContent = '🎨';
-    else icon.textContent = '🪵';
+    icon.textContent = theme === 'dark' ? '🌙' : '☀️';
   }
   localStorage.setItem('sudoku-theme', theme);
 }
 
 (function initTheme() {
   const saved = localStorage.getItem('sudoku-theme');
-  applyTheme(saved || 'wood');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  applyTheme(saved === 'dark' ? 'dark' : (saved === 'light' ? 'light' : (prefersDark ? 'dark' : 'light')));
 })();
 
 document.getElementById('themeToggle')?.addEventListener('click', () => {
-  const current = document.documentElement.getAttribute('data-theme') || 'wood';
-  const order = ['wood', 'indigo', 'dark'];
-  const nextIdx = (order.indexOf(current) + 1) % order.length;
-  applyTheme(order[nextIdx]);
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
 });
 
 /* ── Touch Input Pad Handler ── */

@@ -886,8 +886,10 @@
   }
 
   function updateTimerDisplay() {
-    const el = document.getElementById('playTimer');
-    if (el) el.textContent = formatTime(Game.timerSeconds);
+    const formatted = formatTime(Game.timerSeconds);
+    document.querySelectorAll('.timer-display').forEach((el) => {
+      el.textContent = formatted;
+    });
   }
 
   function togglePause() {
@@ -895,14 +897,20 @@
 
     Game.isPaused = !Game.isPaused;
     const overlay = document.getElementById('pauseOverlay');
-    const btn = document.getElementById('pauseBtn');
+    const btns = document.querySelectorAll('#pauseBtn, .pause-btn-trigger');
 
     if (Game.isPaused) {
       if (overlay) overlay.classList.add('active');
-      if (btn) btn.innerHTML = '<span class="icon">▶</span> Resume';
+      btns.forEach((btn) => {
+        btn.innerHTML = '<span class="icon">▶</span> Resume';
+      });
+      clearInterval(Game.timerInterval);
     } else {
       if (overlay) overlay.classList.remove('active');
-      if (btn) btn.innerHTML = '<span class="icon">⏸</span> Pause';
+      btns.forEach((btn) => {
+        btn.innerHTML = '<span class="icon">⏸</span> Pause';
+      });
+      startTimer();
     }
   }
 
@@ -1133,6 +1141,8 @@
   function updateMistakesUI() {
     const el = document.getElementById('playMistakes');
     if (el) el.textContent = `${Game.mistakes}/${Game.maxMistakes} Mistakes`;
+    const elDesk = document.getElementById('playMistakesDesktop');
+    if (elDesk) elDesk.textContent = `${Game.mistakes} / ${Game.maxMistakes}`;
   }
 
   function updateHintsUI() {
@@ -1235,9 +1245,10 @@
     document.getElementById('hintBtn')?.addEventListener('click', provideHint);
     document.getElementById('newGameBtn')?.addEventListener('click', () => startNewGame(Game.difficulty, true));
     document.getElementById('pauseBtn')?.addEventListener('click', togglePause);
+    document.querySelectorAll('.pause-btn-trigger').forEach((b) => b.addEventListener('click', togglePause));
     document.getElementById('resumeBtn')?.addEventListener('click', togglePause);
-    document.getElementById('playBackBtn')?.addEventListener('click', () => {
-      window.switchAppView('viewHome');
+    document.querySelectorAll('#playBackBtn, .game-nav-back').forEach((btn) => {
+      btn.addEventListener('click', () => window.switchAppView('viewHome'));
     });
 
     document.getElementById('compPlayAgainBtn')?.addEventListener('click', () => {
